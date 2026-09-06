@@ -16,54 +16,57 @@ The skill rebuilds the recipe as a dependency graph, then renders it against a c
 
 ## What it looks like
 
-A weeknight pasta, six portions, one cook:
+A weeknight pasta, six portions, one cook. The whole output is a markdown document; only the plan itself is fenced, where a fixed-width font keeps the lanes aligned.
+
+**Serves 6** · Active ~28 min · Total elapsed ~32 min
+
+**Nutrition** *(from source)* — ~540–590 kcal per serve · P 24–27 g · C 75–82 g · F 12–15 g
 
 ```
-Serves 6  ·  Per serve ~540–590 kcal
-Total ~3,240–3,540 kcal                      [source]
-P 24–27 g · C 75–82 g · F 12–15 g
+Legend
+  ●  act    │  free    ┃  stay at the pan
+  ◆  go when true    ◇  stop when true
+  🔪 prep, into a free window    ✓  done
+  [+n]  minutes to your next action, either lane
+  Right-hand lane is the pasta.
 
-Active ~28 min  ·  Total elapsed ~32 min
-
-Legend  ● act  │ free  ┃ attended  ◆ gate  ◇ stop
-        [+n] to next action · 🔪 prep · ✓ done
-        Right-hand lane is the pasta.
-
-0 min       ● OIL + ONION + PINCH SALT, medium
-[+4 min]    │  cook 8–10 min → soft, golden, savoury
-            │
-            │  🔪 Mince garlic
-            │
-4 min       ├·············→ ● LARGE POT ON, salt well
-[+5 min]    │               │  ◆ to a rolling boil
-            │               │
-            │  🔪 Measure herbs, chilli, pepper
-            │               │
-9 min       ● ADD GARLIC    │
-            ┃  1 min, don't let it colour
-10 min      ● PASSATA + HERBS + CHILLI + PEPPER
-[+4 min]    │  simmer 8–10 min
-            │               │
-            │  🔪 Drain + rinse cannellini
-            │               │
-14 min      │               ● PASTA IN
-[+5 min]    │               │  9 min ◇ slightly underdone
-            │               │
-            │  🔪 Grate parmesan
-            │               │
-19 min      ● BALSAMIC · TASTE · SALT GRADUALLY
-20 min      ● ADD BEANS + FROZEN PEAS
-[+2 min]    │  simmer 2–3 min
-            │               │
-22 min      ● ADD SPINACH · stir once, let it wilt
-            │               ◆ CUP BY THE SINK
-23 min      │               ● RESERVE 1 CUP · DRAIN
-            │               ✓ PASTA (holds ~3 min)
-24 min      ● HEAT LOW · COTTAGE CHEESE + PARMESAN
-[+2 min]    ┃  + splash of pasta water · DO NOT BOIL
-26 min      └─────────────→ ● ADD PASTA · MIX
-[+2 min]    ┃  adjust salt, pepper, pasta water
-28 min      ✓ DONE
+ 0 min   ● OIL + ONION + PINCH SALT, medium
+ [+4]    │  8–10 min → soft, golden, savoury
+         │
+         │  🔪 Mince garlic
+         │
+ 4 min   ├·······→ ● PASTA POT ON, salt well
+ [+5]    │         │  ◆ to a rolling boil
+         │         │
+         │  🔪 Measure herbs, chilli, pepper
+         │         │
+ 9 min   ● GARLIC  │
+         ┃  1 min, don't let it colour
+10 min   ● PASSATA + HERBS + CHILLI + PEPPER
+ [+4]    │  simmer 8–10 min
+         │         │
+         │  🔪 Drain + rinse cannellini
+         │         │
+14 min   │         ● PASTA IN
+ [+5]    │         │  ~9 min ◇ slightly underdone
+         │         │
+         │  🔪 Grate parmesan
+         │  🔪 Peas, spinach, cottage cheese out
+         │         │
+19 min   ● BALSAMIC · TASTE · SALT GRADUALLY
+         │  → until savoury and rounded
+20 min   ● BEANS + FROZEN PEAS
+ [+2]    │  simmer 2–3 min
+         │         │
+22 min   ● SPINACH · stir once, let it wilt
+         │         ◆ cup by the sink
+23 min   │         ● RESERVE 1 CUP · DRAIN
+         │         ✓ PASTA — holds ~3 min
+24 min   ● LOW HEAT · COTTAGE CHEESE + PARMESAN
+ [+2]    ┃  + splash pasta water · DO NOT BOIL
+26 min   └────────→ ● ADD PASTA · MIX
+ [+2]    ┃  adjust salt, pepper, pasta water
+28 min   ✓ DONE
 ```
 
 The recipe as written says *cook the pasta first*. Pasta holds for about zero minutes and the sauce takes 26, so the timeline starts the water at minute 4 instead and the pasta drains three minutes before it's needed.
@@ -72,13 +75,13 @@ The recipe as written says *cook the pasta first*. Pasta holds for about zero mi
 
 | | |
 |---|---|
-| `[+4 min]` | how long until you next have to do something — **in any lane**, not just this one |
+| `[+4]` | how long until you next have to do something — **in any lane**, not just this one. Minutes; the legend says so once |
 | `│` `┃` | free versus hands-on. `┃` means stay at the pan |
 | `◆` | a gate: don't proceed until it's true (*rolling boil*, *oven at 200°C*) |
 | `◇` | a stop-condition: stop the moment it's true (*just combined*, *slightly underdone*) |
 | `🔪` | prep, placed in a window that genuinely fits it |
 | `├···→` `└───→` | a parallel component, and a merge where two things actually combine |
-| `[source]` `[est.]` | nutrition quoted from the recipe, versus computed from the ingredients |
+| `(from source)` `(calculated)` | nutrition quoted from the recipe, versus computed from the ingredients |
 
 ## Install
 
