@@ -60,25 +60,25 @@ When the user changes a recipe that already has a plan — adds a side, drops a 
 
 A plan is a graph, not a list. One new component changes the merged action list, so markers downstream shift; it can also create a collision, consume the last free prep window, put a second pot on a burner, exceed the pot's capacity, or push the meal past two lanes and into serve-time anchoring. Local edits are exactly how a plan ends up internally inconsistent, with stale markers pointing at actions that have moved.
 
-Re-running is cheap. What is not cheap is losing what the previous pass established, so carry it forward explicitly under a **Carried forward** heading:
+Re-running is cheap. What is not cheap is losing what the previous pass established, so restate it **in the reply, not the document** (§11) — stating it there makes it correctable rather than silently assumed:
 
 - methods the user supplied that the source did not contain
 - a serve time, serving count or container count they gave
 - corrections they made to the last output
 - anything they said they do differently
 
-Stating them makes them correctable rather than silently assumed.
+Where one of these is durable it also lands in the document, but as ordinary content, not as a record of the change: a supplied method as a branch with a one-line third-person provenance note (§11), a given serve time as the actual clock. What stays in the reply is that this pass is where it came from.
 
-Then, beneath the new plan, add a short **What moved** list — only what changed position or attention, not a recount:
+Then tell the user what moved — again in the reply, never as a document section — listing only what changed position or attention, not a recount:
 
 ```text
-What moved
+What moved  (reply only, never a section)
 - Garlic 9 min → 11 min (pasta pot now starts at 4 min)
 - Collision at 22 min: drain moved into the spinach wilt
 - Two hot components now, so the plan anchors to serve
 ```
 
-The user may already have the old plan in their head. Telling them what shifted is the point of re-running rather than patching.
+The user may already have the old plan in their head. Telling them what shifted is the point of re-running rather than patching — but it is a message to them, not a line in a document a stranger will cook from.
 
 ---
 
@@ -227,15 +227,15 @@ Source says only "serve with rice" — no method given:
   ## Serve with
   Rice — method not given.
 
-User supplies one — branch allowed, and credited:
+User supplies one — branch allowed, with its provenance noted:
 
-  Rice method supplied by you, not the source:
+  Rice — method not from the source
   wash · boil · low + cover 12 min
 
 10 min   ├·······→ 🔪 Wash rice · pot on
 ```
 
-A method may come from the source, from a second recipe, or from the user. When it comes from the user, say so in the output so the reader can see where those steps originated. Never manufacture one.
+A method may come from the source, from a second recipe, or from the user. When it comes from anywhere but the source, mark it — one short line in the third person beside the branch, naming what the source lacked rather than who supplied it or when (§11) — so the reader can see where those steps originated. Never manufacture one.
 
 ## Gates and stop-conditions
 
@@ -564,11 +564,6 @@ The output is a **markdown document**. Only the plan is fenced (§10).
 - **Protein** n g · **Carbs** n g · **Fat** n g
 - [fibre, sugar or sodium only when the source gives them]
 
-## Carried forward
-
-Only on a revision: methods, serve times and corrections the user
-supplied in an earlier pass.
-
 ## Equipment
 
 Anything beyond a knife, board and one pan. Flag pot capacity, and
@@ -610,10 +605,6 @@ The legend, then the plan, in one fenced block.
 
 Rest, cool, chill, set. Mandatory when it exists.
 
-## What moved
-
-Only on a revision.
-
 ## Storage and reheating
 
 Only if requested or supported by the source.
@@ -629,7 +620,11 @@ The recipe name is `#`; every section heading is `##`.
 
 Write the document to a markdown file named after the recipe in kebab-case — `batch-tomato-pasta.md` — and deliver that file. A plan is read in a kitchen, edited later, and published somewhere; all three want a file, and none of them want it trapped in a chat transcript.
 
-The reply alongside it carries only what does not belong in the document: a source contradiction (§3), anything the user supplied that the plan now depends on, and one line on what changed if this is a revision. Do not paste the whole document into the reply as well — the file is the artefact.
+The reply carries everything that is true of *this pass* rather than of the dish: a source contradiction (§3), what the user supplied or decided and when, what a revision moved, and why. None of it goes in the document. Do not paste the whole document into the reply as well — the file is the artefact.
+
+A document is read by someone who was not here. Every line in it must still be true and useful to a cook who never saw the conversation, so it describes the dish as it now stands and never as it differs from a previous version. "Scaled from a 10-serve source", "your correction this pass", "the lemon moved to serving" — all of these describe an edit, not a recipe.
+
+Provenance is the exception, and only where it changes how the recipe is read: a method or a storage note that came from somewhere other than the source is marked in one short line beside the content it qualifies, in the third person. Not a section, and never a log.
 
 ## Spacing belongs to the destination
 
@@ -782,11 +777,6 @@ A different shape: work that happens hours earlier, cooking that happens before 
 
 Rajma only; rice adds ~205 kcal per serve.
 
-## Carried forward
-
-- Rice method supplied by you, not the source: wash · boil · low +
-  cover 12 min.
-
 ## Earlier
 
 - **Soak the rajma** — 6 hr or overnight
@@ -802,7 +792,7 @@ Rajma only; rice adds ~205 kcal per serve.
 
 Renders as the pasta example above.
 
-The 45 minutes of pressure-cooking sits in total elapsed, never in active. The rice is a branch **only** because the method was supplied and credited — had the source said just "serve with rice," the correct output is `Rice — method not given` under **Serve with**, with no lane at all. And the rice would finish alongside the rajma on its own `✓` row: no merge, because rice and rajma share a plate rather than combining.
+The 45 minutes of pressure-cooking sits in total elapsed, never in active. The rice is a branch **only** because a method was supplied, and it carries its provenance as one line beside the branch — `Rice — method not from the source` — in the third person, so the reader learns which part of the recipe the source never contained without a receipt of who asked or when (§11). Had the source said just "serve with rice" with no method, the correct output is `Rice — method not given` under **Serve with**, with no lane at all. And the rice would finish alongside the rajma on its own `✓` row: no merge, because rice and rajma share a plate rather than combining.
 
 ## Mode B — stir-fry
 
@@ -924,6 +914,8 @@ Each of these has happened. They are here because the symptom is not obvious fro
 
 **Blocking on a contradiction.** Stopping to ask which nutrition table is right, or rendering the reconciliation into the plan. Resolve to the recipe as written, flag it once beside the plan, keep going.
 
+**Session leaked into the document.** A published recipe carrying "scaled from the original", "carried forward" or "what moved" — true of the edit, meaningless to the cook. The re-run rule (§0) exists so the document does not accumulate its own history; writing that history into a section puts it back.
+
 **Marker measuring the wrong thing.** `[+8–10]` at Clock 0 when a branch opens at 4 min. It counts to the next action in any lane, so it splits into `[+4]` and `[+5]`.
 
 **Units on every marker.** `[+4 min]` twelve times over. The legend says minutes once.
@@ -968,7 +960,8 @@ Before returning, verify each. If any answer is no, revise.
 - **Typography** — recipe name `#`, sections `##`, provenance in the Nutrition heading, a rule above and below the plan, no orphan lines?
 - **Source** — do I actually have the method?
 - **Provenance** — does every branch have a real method, and is a user-supplied one credited?
-- **Revision** — if this replaces an earlier plan, did I re-run from the source, list what was carried forward, and say what moved?
+- **Revision** — if this replaces an earlier plan, did I re-run from the source, and put what moved in the reply rather than the document?
+- **Durability** — does every line still read correctly to someone who never saw this conversation? No section, note or aside defined by what changed, who asked, or which pass this is.
 - **Nutrition** — per-serve and total, tagged `(from source)` or `(calculated)`, rounded to the precision it deserves?
 - **Servings** — stated, or calculated and said so; totals only when neither is possible?
 - **Contradictions** — resolved to the recipe as written, flagged once beside the plan, kept out of the plan itself?
