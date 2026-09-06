@@ -9,7 +9,7 @@ Turn a conventional recipe into an execution plan for one cook.
 
 A recipe lists actions in **written order**. This skill re-renders them in **execution order** — a cooking dependency graph laid out against a clock.
 
-Each timeline row answers three questions at once:
+Each plan row answers three questions at once:
 
 - **Where am I?** — cumulative position
 - **How long until I must act?** — the interval marker
@@ -25,7 +25,7 @@ The underlying rule for prep:
 
 Before anything else, classify the recipe. Choosing the wrong mode is the most common failure.
 
-**If the recipe has fewer than 5 actions and no meaningful timing or parallelism** — scrambled eggs, a salad, a smoothie — recommend a simple numbered sequence rather than a full timeline, and say in one line why the timeline would be overhead. **If the user explicitly asks for the timeline format, give them the timeline.** This threshold is a default, not a refusal.
+**If the recipe has fewer than 5 actions and no meaningful timing or parallelism** — scrambled eggs, a salad, a smoothie — recommend a simple numbered sequence rather than a full plan, and say in one line why it would be overhead. **If the user explicitly asks for the timeline format, give it to them.** This threshold is a default, not a refusal.
 
 Otherwise pick a mode:
 
@@ -40,7 +40,7 @@ At least one interval over 3 minutes and 6+ actions. Most stovetop mains, braise
 There is no free time in Mode B, so do not pretend there is. Output:
 
 1. **Mise en place, in reach order** — everything prepped and arranged before heat, listed in the order it will be grabbed.
-2. **A before-heat block** carrying any preheat gate and its lead time.
+2. **A before-heat block** carrying any preheat gate and its lead time, outside the sequence clock. The clock starts when the food hits the heat, not when the pan does.
 3. **A fast sequence** with cumulative seconds and gates, no `[+n]` markers and no prep tasks inside it.
 4. An explicit line: *"From heat on to plate is about N minutes with no pause. Everything above must be within arm's reach first."*
 
@@ -52,15 +52,15 @@ Active work is a small fraction of elapsed time: baking, bread, chilled and set 
 
 ## Mixed
 
-Many recipes are Mode A with a Mode C tail — banana bread is a 20-minute timeline plus 70 minutes of cooling. Render the timeline, then an **After active cooking** block. Do not mark the dish complete until the tail is done.
+Many recipes are Mode A with a Mode C tail — banana bread is a 20-minute timeline plus 70 minutes of cooling. Render the timeline, then an **After active cooking** section. Do not mark the dish complete until the tail is done.
 
-## Revising an existing timeline
+## Revising an existing plan
 
-When the user changes a recipe that already has a timeline — adds a side, drops a component, sets a serve time, doubles the quantity — **re-run the whole skill from the original source. Do not patch the previous output.**
+When the user changes a recipe that already has a plan — adds a side, drops a component, sets a serve time, doubles the quantity — **re-run the whole skill from the original source. Do not patch the previous output.**
 
-A timeline is a graph, not a list. One new component changes the merged action list, so markers downstream shift; it can also create a collision, consume the last free prep window, put a second pot on a burner, exceed the pot's capacity, or push the meal past two lanes and into serve-time anchoring. Local edits are exactly how a timeline ends up internally inconsistent, with stale markers pointing at actions that have moved.
+A plan is a graph, not a list. One new component changes the merged action list, so markers downstream shift; it can also create a collision, consume the last free prep window, put a second pot on a burner, exceed the pot's capacity, or push the meal past two lanes and into serve-time anchoring. Local edits are exactly how a plan ends up internally inconsistent, with stale markers pointing at actions that have moved.
 
-Re-running is cheap. What is not cheap is losing what the previous pass established, so carry it forward explicitly under a **Carried forward** heading above the new plan:
+Re-running is cheap. What is not cheap is losing what the previous pass established, so carry it forward explicitly under a **Carried forward** heading:
 
 - methods the user supplied that the source did not contain
 - a serve time, serving count or container count they gave
@@ -69,7 +69,7 @@ Re-running is cheap. What is not cheap is losing what the previous pass establis
 
 Stating them makes them correctable rather than silently assumed.
 
-Then, beneath the new timeline, add a short **What moved** list — only what changed position or attention, not a recount:
+Then, beneath the new plan, add a short **What moved** list — only what changed position or attention, not a recount:
 
 ```text
 What moved
@@ -84,7 +84,7 @@ The user may already have the old plan in their head. Telling them what shifted 
 
 # 1. Source Gate
 
-If ingredients are present but the **method** is missing, stop. Report that a faithful timeline cannot be built. Do not invent a plausible recipe.
+If ingredients are present but the **method** is missing, stop. Report that a faithful plan cannot be built. Do not invent a plausible recipe.
 
 If the method is present but **times are missing** (very common on recipe blogs and in traditional recipes), proceed — but mark inferred durations per §7 and lead every cue-driven step with the cue, not the number.
 
@@ -100,49 +100,65 @@ If the user asks to scale the recipe, note that durations do not scale linearly 
 
 ---
 
-# 3. Nutrition Block
+# 3. Nutrition
 
-Every output opens with servings, energy and macros, before anything else. The cook decides whether to make the dish from this block, so it goes above the equipment and ingredients.
+Every output carries servings, energy and macros near the top, above the equipment and ingredients. The cook decides whether to make the dish from this block.
 
 ```text
-Serves 4  ·  Per serve ~300 kcal  ·  Total ~1,200 kcal
-P 13 g  ·  C 42 g  ·  F 9 g                     [est.]
+## Nutrition *(calculated)*
+
+- **Energy** ~300 kcal per serve · ~1,200 kcal total
+- **Protein** 13 g · **Carbs** 42 g · **Fat** 9 g
 ```
 
 Protein, carbohydrate and fat are the default three. Carry fibre, sugar or sodium only when the source gives them. Always show **both** per-serve and total.
 
-## Three tiers, always marked
+## Provenance, always marked
 
-`[source]` — the recipe states the figures. Quote them verbatim. Do not recompute them, and do not "correct" them even if your own estimate disagrees; say so in a line beneath if the gap is large.
+`(from source)` — the recipe states the figures. Quote them verbatim. Do not recompute them, and do not "correct" them even if your own estimate disagrees.
 
-`[est.]` — computed by you from the ingredient list. Never present these as the recipe's own numbers.
+`(calculated)` — computed by you from the ingredient list. Never present these as the recipe's own numbers.
 
-**Omitted** — the ingredients cannot support an estimate. Show what you can and name the blocker:
-
-```text
-Serves 4  ·  Energy not estimated
-"Oil for deep frying" — no quantity, and absorbed oil
-dominates the figure.
-```
-
-This mirrors the `[+]` / `[≈]` distinction used for durations. Same rule: an invented number rendered in the typography of a sourced one is a fidelity failure.
-
-If the source contradicts itself, point at the contradiction and say which figure matches the recipe as written. Do not silently pick one:
+**Omitted** — the ingredients cannot support an estimate. Leave the heading untagged and name the blocker in the list:
 
 ```text
-Source note: the ingredient list says 20–30 g parmesan
-but its second table is calculated on 66 g.
+## Nutrition
+
+- **Energy** not estimated — "oil for deep frying" has no
+  quantity, and absorbed oil dominates the figure.
 ```
+
+The tag **goes in the section heading**, not on a line of its own beneath the list. A tag on its own line is an orphan: it belongs to neither the block above nor the one below, so a renderer gives it no anchor and it reads as a caption for whatever section follows. Any caveat that will not fit in the heading goes in a normal line under the list: *"rajma only; rice adds ~205 kcal per serve."*
+
+Provenance is written in words, not brackets. Brackets earn their place on `[+n]` markers, which sit in a column of their own; in a heading there is no column, and brackets read as machine output.
+
+The distinction mirrors `[+n]` / `[≈n]` for durations, and carries the same rule: an invented number presented as a sourced one is a fidelity failure.
 
 ## Servings
 
 Per-serve figures need a serving count.
 
 - Stated by the source → use it. A storage line like "portion into 6 containers" states it.
-- Not stated → infer from total quantity and mark it: `Serves ~6 [est. from volume]`.
+- Not stated → infer from total quantity and say so under the list: *"serving count calculated from volume."*
 - Cannot be inferred → show totals only and say per-serve needs a serving count.
 
-When the source gives per-serve figures only, multiplying out for the total is arithmetic on its numbers, not a new estimate. It stays `[source]`.
+When the source gives per-serve figures only, multiplying out for the total is arithmetic on its numbers, not a new estimate. It stays `(from source)`.
+
+## When the source contradicts itself
+
+Raise it once, in the reply, and keep going. Do not wait for an answer, and do not render the reconciliation into the plan — the plan is what gets published, and a reader who only ever sees one set of figures has no use for the arithmetic behind the choice.
+
+Resolve by taking the figures that match **the recipe as written**: the ingredient list governs, not a table calculated on some other quantity. Tag them `(from source)` like any other stated figures.
+
+Beside the plan, once:
+
+```text
+The ingredient list says 20–30 g parmesan but the second
+nutrition table is calculated on 66 g. I've used the
+20–30 g figures — say if you want the other set.
+```
+
+If the user answers, re-run with their choice. If they don't, the plan already stands and nothing needs redoing.
 
 ## Estimating honestly
 
@@ -155,11 +171,11 @@ These are what make ingredient-list estimates wrong. Each has a rule:
 - **Trim, bones, shells, peel** — estimate on edible yield, not purchase weight.
 - **Reduction** — evaporation removes water, not energy. A reduced sauce has the same calories as before it reduced. Never scale the figure down for simmering.
 - **Alcohol** — assume roughly half retained in a simmered dish, nearly all in an unheated one.
-- **Accompaniments not costed in the recipe** — exclude them, and say the figure is for the dish alone: *"Rajma only — rice adds ~205 kcal per serve."*
+- **Accompaniments not costed in the recipe** — exclude them, and say the figure is for the dish alone.
 
 ## Precision discipline
 
-An ingredient-list estimate is worth ±15% at best. Never render it more precisely than that supports: `~520 kcal`, not `518 kcal`. Round energy to the nearest 10 kcal and macros to the nearest gram. Do not put ranges on macros — round hard and let `[est.]` carry the uncertainty. Ranges the **source** gives are preserved as written.
+An ingredient-list estimate is worth ±15% at best. Never render it more precisely than that supports: `~520 kcal`, not `518 kcal`. Round energy to the nearest 10 kcal and macros to the nearest gram. Do not put ranges on macros — round hard and let `(calculated)` carry the uncertainty. Ranges the **source** gives are preserved as written.
 
 ## Scope
 
@@ -208,7 +224,7 @@ A branch is a genuinely separate meal component: rice, pasta, potatoes, a vegeta
 ```text
 Source says only "serve with rice" — no method given:
 
-  ### Serve with
+  ## Serve with
   Rice — method not given.
 
 User supplies one — branch allowed, and credited:
@@ -216,7 +232,7 @@ User supplies one — branch allowed, and credited:
   Rice method supplied by you, not the source:
   wash · boil · low + cover 12 min
 
-  10 min   ├············→ 🔪 Wash rice · pot on
+10 min   ├·······→ 🔪 Wash rice · pot on
 ```
 
 A method may come from the source, from a second recipe, or from the user. When it comes from the user, say so in the output so the reader can see where those steps originated. Never manufacture one.
@@ -234,8 +250,8 @@ Conditions, not durations. Never proceed on the clock alone.
 A gate also covers a **setup precondition** that makes a step irreversible if missed. Put it on the line above the action, not inside it:
 
 ```text
-            │               ◆ CUP BY THE SINK
-23 min      │               ● RESERVE 1 CUP · DRAIN
+         │         ◆ cup by the sink
+23 min   │         ● RESERVE 1 CUP · DRAIN
 ```
 
 ## Carryover cooking
@@ -272,7 +288,7 @@ Almost never stated, and the most common real-world timing failure. Plan with:
 - wok to smoking: ~2–4 min
 - pan to medium for sautéing: ~1–2 min
 
-Put the preheat on the plan early enough that the gate is met when needed. In Mode B it belongs in **Before heat**, outside the sequence clock.
+Put the preheat on the plan early enough that the gate is met when needed.
 
 ---
 
@@ -290,7 +306,7 @@ Do not draw an eight-hour timeline because something soaked overnight — collap
 
 Mode A: only what genuinely must be ready at Clock 0 — pre-cooked components used later in the main sequence, ingredients needed within the first minute, whole spices that hit hot oil immediately. Do not dump all mise en place here, except when the recipe is a bake (see the baking exception).
 
-Mode B: the full mise en place in reach order, **plus** any preheat gate with its lead time. The sequence clock starts when the food hits the heat, not when the pan does.
+Mode B differs; see §0.
 
 ## TIMELINE / SEQUENCE / SESSIONS
 
@@ -307,9 +323,7 @@ Resting, cooling, chilling, setting, maturing. Mandatory whenever it exists, and
 
 Report both, and never conflate them. Work hidden in EARLIER or BEFORE ACTIVE COOKING belongs in the second number only:
 
-```text
-Active ~27 min  ·  Total elapsed ~1 hr 15 + soaking
-```
+`**Serves 4** · Active ~27 min · Total elapsed ~1 hr 15 + soaking`
 
 Here 45 minutes of pressure-cooking sits outside the 27-minute clock. A rajma that hides it is not a 27-minute recipe.
 
@@ -319,16 +333,18 @@ Here 45 minutes of pressure-cooking sits outside the 27-minute clock. A rajma th
 
 ## Marker syntax
 
-- `[+5 min]` — **stated by the source**
-- `[≈5 min]` — **inferred by you**
-- `[+3–5 min]` — a stated range, preserved
+- `[+5]` — **stated by the source**
+- `[≈5]` — **inferred by you**
+- `[+3–5]` — a stated range, preserved
 
-Rendering an invented number in the same typography as a sourced one is a fidelity failure. Include the legend in every output.
+Markers carry no unit. The legend says "minutes" once; repeating it on every row spends width on nothing.
 
-**When the source gives no durations at all**, universal `[≈]` marking distinguishes nothing and becomes noise. Drop the per-interval marker and put one line above the timeline instead:
+Rendering an invented number in the same typography as a sourced one is a fidelity failure. Include the legend in every plan.
+
+**When the source gives no durations at all**, universal `[≈]` marking distinguishes nothing and becomes noise. Drop the per-interval marker and put one line above the plan instead:
 
 ```text
-Source gives no times — all intervals below are estimates.
+Source gives no times — all intervals are estimates.
 Cook to the cues, not the clock.
 ```
 
@@ -338,36 +354,36 @@ Then use plain `[+n]` throughout and let the cues carry the weight.
 
 A marker counts down to the next moment the cook must do something **anywhere in the recipe** — not to the next event in the same lane, and not to the end of whatever is currently cooking.
 
-Compute markers against the **merged** action list of every lane. A branch opening at 4 min splits a ten-minute onion window into `[+4 min]` and `[+5 min]`; it does not stay `[+8–10 min]` because the onion is still going.
+Compute markers against the **merged** action list of every lane. A branch opening at 4 min splits a ten-minute onion window into `[+4]` and `[+5]`; it does not stay `[+8–10]` because the onion is still going.
 
 ## Where a marker sits — immediately below its timestamp
 
 Put the marker on the line **directly under the timestamp it follows**, so reading down the left column gives "here I am / here's how long I've got" with nothing in between. The cooking duration, the cue and any prep go on the lines after.
 
 ```text
-0 min       ● OIL + ONION, medium heat
-[+4 min]    │  cook 8–10 min → soft and golden
-            │
-4 min       ├············→ ● PASTA POT ON
+ 0 min   ● OIL + ONION, medium heat
+ [+4]    │  8–10 min → soft and golden
+         │
+ 4 min   ├·······→ ● PASTA POT ON
 ```
 
-`cook 8–10 min` is the doneness spec; `[+4 min]` is when the cook next has a job. Conflating the two is the most common marker error — invisible in a single-lane recipe, obvious the moment a branch interleaves.
+`8–10 min` is the doneness spec; `[+4]` is when the cook next has a job. Conflating the two is the most common marker error — invisible in a single-lane recipe, obvious the moment a branch interleaves.
 
 ## Threshold — no marker for a gap of 1 minute or less
 
-Skip these entirely. Two consecutive timestamps a minute apart already say everything a `[+1 min]` would. Keep the action's own short duration inline instead:
+Skip these entirely. Two consecutive timestamps a minute apart already say everything a `[+1]` would. Keep the action's own short duration inline instead:
 
 ```text
-9 min       ● ADD GARLIC
-            ┃  1 min, don't let it colour
-10 min      ● ADD PASSATA
+ 9 min   ● ADD GARLIC
+         ┃  1 min, don't let it colour
+10 min   ● ADD PASSATA
 ```
 
 The left column should carry only the gaps worth planning around.
 
 ## Ranges and compounding
 
-Preserve source ranges on the **durations** — never collapse `cook 3–5 min` to `4 min`.
+Preserve source ranges on the **durations** — never collapse `3–5 min` to `4 min`.
 
 But compute markers and cumulative timestamps along a single nominal path (the midpoint), or a long recipe accumulates into `~95–130 min`, which informs no one. Durations carry the uncertainty; positions and gaps stay single numbers. Prefix inferred positions with `~`.
 
@@ -376,10 +392,10 @@ But compute markers and cumulative timestamps along a single nominal path (the m
 Batch work — frying in loads, pancakes, dosa, searing in two goes — is one event with a cycle, never N copies:
 
 ```text
-14 min      ● FRY BATCH 1
-[≈20 min]   ╎  ↻ ×4 · ~4 min each + 1 min recovery
-            ╎  ◆ hold cooked batches at 100°C
-34 min      ● LAST BATCH OUT
+14 min   ● FRY BATCH 1
+ [≈20]   ╎  ↻ ×4 · ~4 min each + 1 min recovery
+         ╎  ◆ hold cooked batches at 100°C
+34 min   ● LAST BATCH OUT
 ```
 
 Always account for recovery time between cycles, and always say where finished batches wait.
@@ -456,7 +472,7 @@ Reserve `└──→` for components that genuinely **combine into one dish** �
 
 ## Collisions — the cook has one pair of hands
 
-Two lanes may hold events in the same minute. One cook cannot execute both. After placing every event, walk the merged timeline and flag any two hands-on actions within a minute of each other in different lanes.
+Two lanes may hold events in the same minute. One cook cannot execute both. After placing every event, walk the merged plan and flag any two hands-on actions within a minute of each other in different lanes.
 
 Resolve by moving the flexible one **into a genuinely passive window of the other**, not by nudging it arbitrarily:
 
@@ -470,9 +486,9 @@ If neither can move, say which one waits and what that costs.
 Annotate every completion with how long it will wait:
 
 ```text
-✓ RICE (holds 20 min covered)
-✓ GREENS (holds ~3 min — do last)
-✓ ROAST (needs 15 min rest — do first)
+✓ RICE — holds 20 min covered
+✓ GREENS — holds ~3 min, do last
+✓ ROAST — needs 15 min rest, do first
 ```
 
 Rough tolerances: rice covered 20–30 min · braises and stews indefinitely, improving · roast meat 15–25 min resting · mashed potato 20 min covered · pasta ~0, dress immediately · green vegetables 2–5 min · fried food 10 min in a low oven, degrading · anything crisp ~0.
@@ -504,81 +520,128 @@ If a batch process outlasts its own batter's shelf life, say so and split the ba
 🔪         just-in-time prep
 🧹         optional cleanup, passive periods only
 ↻          repeated batch cycle
-[+n]       stated gap to the next action
-[≈n]       inferred gap to the next action
-[source]   nutrition stated by the recipe
-[est.]     nutrition computed from the ingredients
+[+n]       stated gap to the next action, in minutes
+[≈n]       inferred gap to the next action, in minutes
 T−n        minutes before serve
-├············→  parallel component branch
-└────────────→  convergence (components that combine)
+├·······→  parallel component branch
+└────────→  convergence (components that combine)
 ✓          component complete
 →          sensory cue
 ```
 
-Put a legend at the top of the timeline, listing only the symbols actually used.
+## Width and fencing
 
-## Width and rendering
+**The plan always goes inside a fenced code block**, legend included, at the top. That fence is what guarantees monospace; outside one, a proportional font collapses the lanes and the layout becomes meaningless. Nothing else in the output is fenced — everything around the plan is markdown (§11).
 
-**Always put the plan inside a fenced code block.** That fence is what guarantees monospace; outside one, a proportional font collapses the lanes and the layout becomes meaningless.
+**Target ~50 characters per line.** A phone in portrait renders roughly 30–40 before wrapping, and a wrapped row destroys the lane structure. Most of the width budget goes to the spine, so keep a branch lane close: open it around column 18, not column 28.
 
-**Target ~60 characters per line.** A budget, not a hard cutoff — a line slightly over is fine; a layout that only works at exactly one width is not. Renderers and phone widths wrap differently, so the real rule is: **never build a row whose meaning is lost when it wraps.** Keep each row independently readable and put the important content early in the line.
+A budget, not a hard cutoff — a line slightly over is fine; a layout that works at exactly one width is not. The real rule: **never build a row whose meaning is lost when it wraps.** Keep each row independently readable and put the important content early in the line.
 
 ## Lanes and rows
 
-No column headers — they collapse. A branch runs in a **fixed right-hand column** for the rest of its life, so anything sitting in that column is visibly the same component without needing a header. Open and close it with a long arrow, and keep the lane's `│` running through the rows in between so the reader can follow it down the page.
+No column headers — they collapse. A branch runs in a **fixed right-hand column** for the rest of its life, so anything sitting in that column is visibly the same component without needing a header. Open and close it with an arrow, and keep the lane's `│` running through the rows in between so the reader can follow it down the page.
 
 **Simultaneous events share a row.** Never stack two events carrying the same timestamp on consecutive lines — that reads as a sequence, which is the opposite of what it means.
 
-At most two lanes. If a third component needs one, give it its own block below the timeline and cross-reference it by time.
+At most two lanes. If a third component needs one, give it its own block below the plan and cross-reference it by time.
 
 ---
 
 # 11. Output Structure
 
-```
-## [Recipe Name]
+The output is a **markdown document**. Only the plan is fenced (§10).
 
-Serves X · Per serve ~N kcal · Total ~N kcal
-P n g · C n g · F n g                    [source|est.]
+```text
+# [Recipe name]
 
-**Active:** X min · **Total elapsed:** Y
+[One line saying what it is. Optional.]
 
-### Carried forward
-Only on a revision: methods, serve times and
-corrections the user supplied in an earlier pass.
+**Serves X** · Active ~N min · Total elapsed ~N
 
-### Equipment
-Anything beyond knife, board, and one pan. Flag pot
-capacity, and any item or burner needed twice at once.
+## Nutrition *(from source)*        [or: *(calculated)*]
 
-### Ingredients
-Grouped by the moment they are used, not by component,
-when that helps the cook stage the bench.
+- **Energy** ~N kcal per serve · ~N kcal total
+- **Protein** n g · **Carbs** n g · **Fat** n g
+- [fibre, sugar or sodium only when the source gives them]
 
-### Serve with
-Accompaniments named in the source, without invented
-methods. Note their energy separately if known.
+## Carried forward
 
-### Earlier
+Only on a revision: methods, serve times and corrections the user
+supplied in an earlier pass.
+
+## Equipment
+
+Anything beyond a knife, board and one pan. Flag pot capacity, and
+any item or burner needed twice at once.
+
+## Ingredients
+
+One nested list, grouped by the moment each thing is used rather
+than by component, each group labelled with its clock time. Groups
+holding a single ingredient sit inline.
+
+- **Before you start** — [item]
+- **0 min · [role]**
+  - [item]
+  - [item]
+- **N min** — [single item]
+
+## Serve with
+
+Accompaniments named in the source, without invented methods.
+
+## Earlier
+
 Long-lead only, when it exists.
 
-### Before active cooking / Before heat
+## Before active cooking            [or: Before heat]
+
 Only what genuinely must be ready.
 
-### Timeline / Sequence / Schedule
-Legend, then the plan.
+---
 
-### After active cooking
+## Timeline                         [or: Sequence, or: Schedule]
+
+The legend, then the plan, in one fenced block.
+
+---
+
+## After active cooking
+
 Rest, cool, chill, set. Mandatory when it exists.
 
-### What moved
-Only on a revision: what shifted since the last plan.
+## What moved
 
-### Storage / reheating
+Only on a revision.
+
+## Storage and reheating
+
 Only if requested or supported by the source.
 ```
 
-The nutrition block sits above the time headline — it is what decides whether the dish gets cooked at all.
+The recipe name is `#`; every section heading is `##`.
+
+**Sections that do not apply are omitted silently** — no placeholder, no "not applicable" line, in any real run. A worked example in §12 is the sole exception: it names what it skips, because an unexplained absence in an example is what teaches the next run to drop a section (§15).
+
+**Emit no HTML.** `<details>`, `<div>` and inline styling do not survive common markdown previewers and publishing tools, which render the tags as literal text. If a destination needs collapsible sections, that is done at the destination.
+
+## The deliverable is a file
+
+Write the document to a markdown file named after the recipe in kebab-case — `batch-tomato-pasta.md` — and deliver that file. A plan is read in a kitchen, edited later, and published somewhere; all three want a file, and none of them want it trapped in a chat transcript.
+
+The reply alongside it carries only what does not belong in the document: a source contradiction (§3), anything the user supplied that the plan now depends on, and one line on what changed if this is a revision. Do not paste the whole document into the reply as well — the file is the artefact.
+
+## Spacing belongs to the destination
+
+Blank lines in markdown do not scale. The renderer's stylesheet decides every vertical gap, so a document cannot be made to breathe by padding the source — two blank lines and one produce identical output. What you control is structure, and three things do the work:
+
+- **Heading level.** Sections are `##`, never `###`. Renderers style h3 tight because it is meant to be subordinate to something; these are top-level sections and want h2's margins. This is the single biggest lever.
+- **Horizontal rules.** `---` is the only primitive that forces a visible break in every renderer. One above and one below the plan, the block that most needs isolating.
+- **No orphan lines.** A line belonging to neither the block above nor the one below has no anchor and reads as a caption for whatever follows. This is why provenance goes in the heading.
+
+If a destination still renders tight after that, it is a stylesheet problem there. Do not answer it by restructuring the output.
+
+Ingredients grouped by moment is the point of that section, not a formatting preference: it is what lets "1 cup reserved pasta water" appear in the 24 min group annotated with where it came from, a relationship a conventional ingredient list cannot express.
 
 ---
 
@@ -588,257 +651,308 @@ These are integration tests, not the teaching material — the rules are taught 
 
 ## Mode A — tomato pasta with beans, peas and spinach
 
+Delivered as `batch-tomato-pasta.md`.
+
+# Batch Tomato Pasta
+
+Beans, peas, spinach and cottage cheese. Six containers, Sunday to Friday.
+
+**Serves 6** · Active ~28 min · Total elapsed ~32 min
+
+## Nutrition *(from source)*
+
+- **Energy** ~540–590 kcal per serve · ~3,240–3,540 kcal total
+- **Protein** 24–27 g · **Carbs** 75–82 g · **Fat** 12–15 g
+- **Fibre** 13–16 g · **Saturated fat** 3–4.5 g
+
+## Equipment
+
+- Your deepest pan or pot — finished volume is around 4 litres, larger
+  than the wording implies.
+- A second pot for the pasta. Both burners run from minute 4.
+
+## Ingredients
+
+Grouped by when they're used.
+
+- **Before you start** — 1 large brown onion, finely diced
+- **0 min · base**
+  - 1 tbsp olive oil
+  - The diced onion
+  - A pinch of salt
+- **4 and 14 min · pasta pot**
+  - 500 g pasta
+  - Salt for the water
+- **9 min** — 5 garlic cloves, minced
+- **10 min · sauce**
+  - 700 g passata or crushed tomatoes
+  - 1–2 tsp Italian herbs
+  - ½ tsp chilli flakes (optional)
+  - Generous black pepper
+- **19 min · seasoning**
+  - 1–2 tsp balsamic vinegar
+  - Salt, gradually, to taste
+- **20–22 min · add-ins**
+  - 2 cans cannellini beans, drained
+  - 450–500 g frozen peas
+  - 1 bag baby spinach (~120–150 g)
+- **24 min · creaminess**
+  - 200 g cottage cheese
+  - 20–30 g parmesan, finely grated
+  - 1 cup reserved pasta water (taken at 23 min)
+
+## Before active cooking
+
+- **Dice the onion** (~3 min)
+
+---
+
+## Timeline
+
 ```text
-Serves 6  ·  Per serve ~540–590 kcal
-Total ~3,240–3,540 kcal                      [source]
-P 24–27 g · C 75–82 g · F 12–15 g
-Fibre 13–16 g · Sat fat 3–4.5 g
-Source note: the ingredient list says 20–30 g parmesan
-but its second table is calculated on 66 g.
+Legend
+  ●  act    │  free    ┃  stay at the pan
+  ◆  go when true    ◇  stop when true
+  🔪 prep, into a free window    ✓  done
+  [+n]  minutes to your next action, either lane
+  Right-hand lane is the pasta.
 
-Active ~28 min  ·  Total elapsed ~32 min
-
-EQUIPMENT
-Deep pan or pot — finished volume ~4 L, larger than the
-wording implies. Second pot for pasta. Two burners from
-4 min.
-
-INGREDIENTS — grouped by when they are used
-before   1 large brown onion, finely diced
-0 min    1 tbsp olive oil · the onion · pinch of salt
-4 min    500 g pasta · salt for the water
-9 min    5 garlic cloves, minced
-10 min   700 g passata · 1–2 tsp Italian herbs
-         ½ tsp chilli flakes · black pepper
-19 min   1–2 tsp balsamic · salt to taste
-20 min   2 cans cannellini, drained · 450–500 g peas
-22 min   1 bag baby spinach (~120–150 g)
-24 min   200 g cottage cheese · 20–30 g parmesan
-         1 cup reserved pasta water [taken at 23 min]
-
-Not applicable here: Serve with (the source names no
-accompaniment), Earlier (no soak, marinade or thaw),
-After active cooking (nothing rests, cools or sets).
-
-BEFORE ACTIVE COOKING
-● DICE ONION (~3 min)
-
-TIMELINE
-Legend  ● act  │ free  ┃ attended  ◆ gate  ◇ stop
-        [+n] to next action · 🔪 prep · ✓ done
-        Right-hand lane is the pasta.
-
-0 min       ● OIL + ONION + PINCH SALT, medium
-[+4 min]    │  cook 8–10 min → soft, golden, savoury
-            │
-            │  🔪 Mince garlic
-            │
-4 min       ├·············→ ● LARGE POT ON, salt well
-[+5 min]    │               │  ◆ to a rolling boil
-            │               │
-            │  🔪 Measure herbs, chilli, pepper
-            │               │
-9 min       ● ADD GARLIC    │
-            ┃  1 min, don't let it colour
-10 min      ● PASSATA + HERBS + CHILLI + PEPPER
-[+4 min]    │  simmer 8–10 min
-            │               │
-            │  🔪 Drain + rinse cannellini
-            │               │
-14 min      │               ● PASTA IN
-[+5 min]    │               │  9 min ◇ slightly underdone
-            │               │
-            │  🔪 Grate parmesan
-            │  🔪 Peas, spinach, cottage cheese out
-            │               │
-19 min      ● BALSAMIC · TASTE · SALT GRADUALLY
-            │  → until savoury and rounded
-20 min      ● ADD BEANS + FROZEN PEAS
-[+2 min]    │  simmer 2–3 min
-            │               │
-22 min      ● ADD SPINACH · stir once, let it wilt
-            │               ◆ CUP BY THE SINK
-23 min      │               ● RESERVE 1 CUP · DRAIN
-            │               ✓ PASTA (holds ~3 min)
-24 min      ● HEAT LOW · COTTAGE CHEESE + PARMESAN
-[+2 min]    ┃  + splash of pasta water · DO NOT BOIL
-26 min      └─────────────→ ● ADD PASTA · MIX
-[+2 min]    ┃  adjust salt, pepper, pasta water
-28 min      ✓ DONE
+ 0 min   ● OIL + ONION + PINCH SALT, medium
+ [+4]    │  8–10 min → soft, golden, savoury
+         │
+         │  🔪 Mince garlic
+         │
+ 4 min   ├·······→ ● PASTA POT ON, salt well
+ [+5]    │         │  ◆ to a rolling boil
+         │         │
+         │  🔪 Measure herbs, chilli, pepper
+         │         │
+ 9 min   ● GARLIC  │
+         ┃  1 min, don't let it colour
+10 min   ● PASSATA + HERBS + CHILLI + PEPPER
+ [+4]    │  simmer 8–10 min
+         │         │
+         │  🔪 Drain + rinse cannellini
+         │         │
+14 min   │         ● PASTA IN
+ [+5]    │         │  ~9 min ◇ slightly underdone
+         │         │
+         │  🔪 Grate parmesan
+         │  🔪 Peas, spinach, cottage cheese out
+         │         │
+19 min   ● BALSAMIC · TASTE · SALT GRADUALLY
+         │  → until savoury and rounded
+20 min   ● BEANS + FROZEN PEAS
+ [+2]    │  simmer 2–3 min
+         │         │
+22 min   ● SPINACH · stir once, let it wilt
+         │         ◆ cup by the sink
+23 min   │         ● RESERVE 1 CUP · DRAIN
+         │         ✓ PASTA — holds ~3 min
+24 min   ● LOW HEAT · COTTAGE CHEESE + PARMESAN
+ [+2]    ┃  + splash pasta water · DO NOT BOIL
+26 min   └────────→ ● ADD PASTA · MIX
+ [+2]    ┃  adjust salt, pepper, pasta water
+28 min   ✓ DONE
 ```
 
-This exercises: markers computed across both lanes and sitting under their timestamps; no `[+1 min]`; cooking durations riding on their events; a setup gate before an irreversible step; a `◇` stop-condition; a resolved collision — the drain sits inside the spinach wilt rather than fighting it; a real merge, because the pasta goes **into** the sauce; `[source]` nutrition with the source's own contradiction named rather than silently resolved; and ingredients grouped by the moment they are used rather than by component, which is what lets the reserved cup of pasta water appear in the 24 min group annotated with where it came from — a relationship a conventional ingredient list cannot express.
+---
+
+## Storage and reheating
+
+- Portion into 6 containers. Keeps Sunday to Friday in the fridge.
+- Reheat with a small splash of water or milk.
+
+Not applicable to this recipe: **Serve with** (the source names no accompaniment), **Earlier** (no soak, marinade or thaw), **After active cooking** (nothing rests, cools or sets). A real plan omits these silently; a worked example names them (§15).
+
+This exercises: markers computed across both lanes and sitting under their timestamps; no `[+1]`; cooking durations riding on their events; a setup gate before an irreversible step; a `◇` stop-condition; a resolved collision — the drain sits inside the spinach wilt rather than fighting it; a real merge, because the pasta goes **into** the sauce; ingredients grouped by the moment they are used, which is what puts the reserved cup of pasta water in the 24 min group annotated with where it came from; and the markdown document of §11 — `##` sections, provenance in the heading, rules isolating the plan — wrapping a single fenced block.
 
 ## Mode A fragment — long-lead and a supplied method
 
 A different shape: work that happens hours earlier, cooking that happens before Clock 0, and a branch whose method the source never gave.
 
-```text
-Serves 4  ·  Per serve ~300 kcal  ·  Total ~1,200 kcal
-P 13 g  ·  C 42 g  ·  F 9 g                     [est.]
-Rajma only — rice adds ~205 kcal per serve.
+# Rajma with Rice
 
-Active ~27 min  ·  Total elapsed ~1 hr 15 + soaking
+**Serves 4** · Active ~27 min · Total elapsed ~1 hr 15 + soaking
 
-Rice method supplied by you, not the source:
-wash · boil · low + cover 12 min
+## Nutrition *(calculated)*
 
-EARLIER
-● SOAK RAJMA — 6 hr / overnight
+- **Energy** ~300 kcal per serve · ~1,200 kcal total
+- **Protein** 13 g · **Carbs** 42 g · **Fat** 9 g
 
-BEFORE ACTIVE COOKING            (~45 min)
-● PRESSURE-COOK RAJMA until soft
-● CHOP ONION + GREEN CHILLI
+Rajma only; rice adds ~205 kcal per serve.
 
-EQUIPMENT, INGREDIENTS and TIMELINE — as the pasta
-example above. Serve with: not applicable, the rice
-method came from the user and so has its own lane.
-```
+## Carried forward
+
+- Rice method supplied by you, not the source: wash · boil · low +
+  cover 12 min.
+
+## Earlier
+
+- **Soak the rajma** — 6 hr or overnight
+
+## Before active cooking
+
+- **Pressure-cook the rajma** until completely soft (~45 min)
+- **Chop** the onion and green chilli
+
+---
+
+## Timeline
+
+Renders as the pasta example above.
 
 The 45 minutes of pressure-cooking sits in total elapsed, never in active. The rice is a branch **only** because the method was supplied and credited — had the source said just "serve with rice," the correct output is `Rice — method not given` under **Serve with**, with no lane at all. And the rice would finish alongside the rajma on its own `✓` row: no merge, because rice and rajma share a plate rather than combining.
 
 ## Mode B — stir-fry
 
+# Kung Pao Chicken
+
+**Serves 2** · Active ~3 min · Total elapsed ~6 min
+
+## Nutrition *(from source)*
+
+- **Energy** 410 kcal per serve · 820 kcal total
+- **Protein** 34 g · **Carbs** 18 g · **Fat** 22 g
+
+## Before heat
+
+In reach order, left to right. Everything here is within arm's reach before the wok goes on.
+
+1. Chicken, marinated
+2. Sauce, whisked
+3. Chillies + Sichuan peppercorns
+4. Garlic, ginger, scallion whites
+5. Peanuts
+6. Scallion greens
+7. Warm serving plate
+
+- **Wok on high** — ◆ until smoking (~3 min)
+
+---
+
+## Sequence
+
 ```text
-Serves 2  ·  Per serve 410 kcal  ·  Total 820 kcal
-P 34 g  ·  C 18 g  ·  F 22 g                 [source]
-
-EQUIPMENT
-Wok or wide heavy pan. One burner on its highest
-setting. Warm plate for the rested chicken.
-
-INGREDIENTS — all of it before heat, in reach order
-1  400 g chicken thigh, sliced, in its marinade
-2  Sauce: soy · vinegar · sugar · cornflour, whisked
-3  6 dried chillies · 1 tsp Sichuan peppercorns
-4  3 garlic cloves · thumb of ginger · scallion whites
-5  50 g roasted peanuts
-6  Scallion greens
-
-Not applicable here: Serve with (none named), Earlier
-(the marinade runs while the rest is prepped, so it is
-pre-prep), After active cooking (nothing rests).
-
-BEFORE HEAT
-● WOK ON HIGH        ◆ until smoking (~3 min)
-
-SEQUENCE — ~3 min, no pause once the oil goes in
-Legend  ● act  ◆ gate  ✓ done
+Legend
+  ●  act    ◆  go when true    ✓  done
 
 0:00   ● Oil, swirl to coat
 0:15   ● Chicken in, spread flat, leave still
 0:45   ● Toss until just opaque
 1:15   ● Remove to plate
-1:20   ● Chillies + peppercorns        20 sec
-1:40   ● Garlic, ginger, whites        30 sec
-2:10   ● Chicken back + sauce, toss to gloss
+1:20   ● Chillies + peppercorns      20 sec
+1:40   ● Garlic, ginger, whites      30 sec
+2:10   ● Chicken back + sauce, to gloss
 2:40   ● Peanuts + greens
 3:00   ✓ PLATE NOW — holds ~0
 ```
 
-Figures are `[source]`, quoted as published and not recomputed. The ingredient list is numbered rather than timed, because Mode B stages everything before heat — the numbers are reach order, which is what replaces timing here. No interval markers and no prep tasks inside the sequence: there is no free time, and pretending otherwise is the failure Mode B exists to prevent.
+---
+
+From heat on to plate is about 3 minutes with no pause.
+
+This example demonstrates the Mode B sequence only; the surrounding document is §11's, unchanged. No interval markers and no prep tasks inside the sequence: there is no free time, and pretending otherwise is the failure Mode B exists to prevent.
 
 ## Mode C — set dessert
 
+# Vanilla Panna Cotta
+
+**Serves ~6** · Active ~20 min · Total elapsed ~4 hr 45
+
+## Nutrition *(calculated)*
+
+- **Energy** ~340 kcal per serve · ~2,040 kcal total
+- **Protein** 4 g · **Carbs** 26 g · **Fat** 25 g
+
+Serving count calculated from mould volume.
+
+---
+
+## Schedule
+
+Serve at 20:00.
+
 ```text
-Serves ~6 [est. from volume]  ·  Per serve ~340 kcal
-Total ~2,040 kcal  ·  P 4 g  ·  C 26 g  ·  F 25 g
-                                               [est.]
-Active ~20 min  ·  Total elapsed ~4 hr 45
+Legend
+  ●  act   │  unattended   ┃  stay at the pan
+  ◆  go when true   🔪 prep   ✓  done
 
-EQUIPMENT
-Saucepan · fine sieve · 6 moulds or ramekins · fridge
-space for all six, flat.
-
-INGREDIENTS — grouped by when they are used
-T−4:45   3 gelatine leaves · cold water to bloom
-T−4:40   500 ml cream · 60 g sugar · 1 vanilla pod
-T−0:02   berries · mint to finish
-
-Not applicable here: Serve with (none named), Earlier
-(the set is a tail, not a lead).
-
-SERVE 20:00
-
-SCHEDULE
-Legend  ● act  │ unattended  ┃ attended  ◆ gate
-
-SESSION 1 — start 15:15, about 15 min hands-on
+SESSION 1 — 15:15, about 15 min hands-on
 T−4:45  🔪 Bloom gelatine in cold water
         │  5 min
-T−4:40  ● Cream + sugar + vanilla, medium heat
+T−4:40  ● Cream + sugar + vanilla, medium
         ┃  ◆ steaming, not simmering
-T−4:33  ● Off heat · stir in gelatine until dissolved
+T−4:33  ● Off heat · stir in gelatine
 T−4:31  ● Strain into moulds
 T−4:30  ● Into the fridge
 
-AFTER ACTIVE COOKING — the set
-        │
-        │  4 hr minimum · good to 24 hr
-        │
 SESSION 2 — 19:55, about 5 min
-T−0:05  ● Dip moulds in warm water 3 sec, unmould
+T−0:05  ● Dip moulds in warm water 3 sec
 T−0:02  🔪 Berries + mint
 T−0:00  ✓ SERVE
 ```
 
-No serving count in the source, so it is inferred from mould volume and marked. Sessions, not a continuous clock. The set is an **After active cooking** block, not a gap in the schedule — the dish is `✓` only after it, never at the end of Session 1.
+---
+
+## After active cooking
+
+- **The set** — 4 hr minimum in the fridge, good to 24 hr. The dish is
+  not done until this is.
+
+This example demonstrates the Mode C schedule only; the surrounding document is §11's, unchanged. The set is an **After active cooking** section, not a gap in the schedule — the dish is `✓` only after it, never at the end of Session 1.
 
 ---
 
 # 13. Failure Modes
 
-**Missing a required section.** A plan with no Ingredients list, because the worked example it anchored on did not have one. Every applicable §11 section appears; skipped ones are skipped because they do not apply, not because they were forgotten.
+Each of these has happened. They are here because the symptom is not obvious from the rule alone — a rule whose violation looks exactly like the rule stated backwards is covered by §14 instead.
+
+**Missing a required section.** A plan with no Ingredients list, because the worked example it anchored on did not have one. Every applicable §11 section appears.
+
+**Plan left in the reply.** No file written, so there is nothing to carry to the kitchen or publish. The file is the artefact.
+
+**Sections at `###`.** h3 is styled tight in nearly every renderer and the document reads cramped. Sections are `##`.
+
+**Orphan provenance line.** `*(from source)*` stranded between the nutrition list and the next heading, where it reads as a caption for the wrong section. It goes in the Nutrition heading.
+
+**Padding the source for spacing.** Extra blank lines to make a document breathe. Markdown collapses them; the levers are heading level, rules, and the destination's stylesheet.
 
 **Invented side method.** "Serve with rice" rendered as a rice branch with washing, boiling and a 12-minute cover. A branch needs a method from the source or the user — and a user-supplied one gets credited.
 
 **Merge where there is none.** `└──→` drawn between a curry and its rice. They share a plate; they do not combine.
 
-**Patching instead of re-running.** Adding a side by inserting a lane and leaving the old markers alone. Re-run from the source, carry forward what the user established, list what moved.
+**Blocking on a contradiction.** Stopping to ask which nutrition table is right, or rendering the reconciliation into the plan. Resolve to the recipe as written, flag it once beside the plan, keep going.
 
-**Marker measuring the wrong thing.** `[+8–10 min]` at Clock 0 when a branch opens at 4 min. It counts to the next action in any lane.
+**Marker measuring the wrong thing.** `[+8–10]` at Clock 0 when a branch opens at 4 min. It counts to the next action in any lane, so it splits into `[+4]` and `[+5]`.
 
-**Marker floating away from its timestamp.** A `[+n]` two or three lines below the time it belongs to.
+**Units on every marker.** `[+4 min]` twelve times over. The legend says minutes once.
 
-**`[+1 min]` markers.** Noise. Two timestamps a minute apart say it already.
+**Simultaneous events stacked.** Two rows both labelled 23 min, one above the other, reading as a sequence when they are concurrent.
 
-**Simultaneous events stacked.** Two rows both labelled 23 min, one above the other, reading as a sequence.
+**Double-booked cook.** A drain and an emulsion stir in the same minute in different lanes. One pair of hands.
 
-**Double-booked cook.** A drain and an emulsion stir in the same minute in different lanes.
-
-**Refusing a simple recipe.** Declining a timeline the user directly asked for because the recipe is short.
-
-**Fabricated nutrition.** An estimate presented as the recipe's own figure, or calories quoted to the digit off an ingredient list.
-
-**Calories cut for reduction.** Evaporation removes water, not energy.
+**Calories cut for reduction.** Lowering the figure because a sauce simmered down. Evaporation removes water, not energy.
 
 **Frying oil counted in full.** The whole pan added when the food absorbed a tenth of it.
 
-**Fabricated precision in time.** `[+8 min]` for "cook till the oil separates." Use `[≈8 min]` and let the cue carry the weight.
-
-**Universal inference markers.** Every line `[≈]` when nothing was sourced. Use the header line.
+**Fabricated precision in time.** `[+8]` for "cook till the oil separates." Use `[≈8]` and let the cue carry the weight.
 
 **Lost tail.** Panna cotta `✓` at 12 minutes when it sets for four hours.
 
 **Forced timeline on attended cooking.** A stir-fry as `0 min ●, 1 min ●, 2 min ●` is a numbered list in costume. Route to Mode B.
 
-**Attention invisible.** Twenty minutes of frying drawn like twenty minutes of covered simmer.
+**Forward-scheduling a dinner.** Four components started from Clock 0, arriving at four different times. Anchor to `T−n`.
 
-**Forward-scheduling a dinner.** Four components from Clock 0, arriving at four different times.
+**Just-in-time prep in a bake.** Weighing flour in a window that does not exist because the batter is already mixed.
 
-**Just-in-time prep in a bake.** Weighing flour in a window that does not exist because the batter is mixed.
+**Batches expanded.** Four fried loads as four event clusters instead of one `↻` cycle.
 
-**Batches expanded.** Four fried loads as four event clusters.
-
-**Rest treated as dead time.** Fifteen minutes of resting meat with the gravy unmade.
-
-**Preheat elided.** Oven at temperature at Clock 0.
+**Rest treated as dead time.** Fifteen minutes of resting meat scheduled with nothing, while the gravy sits unmade.
 
 **Carryover ignored.** Pulling a roast at the finished temperature, then resting it past done.
 
-**Range creep.** `~95–130 min` at the end of a roast.
-
-**Unfenced plan.** A timeline in plain markdown, where a proportional font destroys the lanes.
+**Range creep.** `~95–130 min` at the end of a roast. Nominal path for positions and gaps.
 
 ---
 
@@ -849,12 +963,15 @@ Before returning, verify each. If any answer is no, revise.
 ## All modes
 
 - **Fit** — right mode; and if the recipe is too simple, did I recommend rather than refuse?
-- **Structure** — is every applicable §11 section present, Ingredients included? Sections legitimately skipped (Serve with, Earlier, After active cooking) are omitted silently in a real run; in a worked example they are named.
+- **Deliverable** — written to `<recipe-slug>.md` and delivered as a file, with the reply carrying only what does not belong in the document?
+- **Structure** — a markdown document per §11, every applicable section present, Ingredients among them, the plan and only the plan fenced, no HTML anywhere?
+- **Typography** — recipe name `#`, sections `##`, provenance in the Nutrition heading, a rule above and below the plan, no orphan lines?
 - **Source** — do I actually have the method?
 - **Provenance** — does every branch have a real method, and is a user-supplied one credited?
 - **Revision** — if this replaces an earlier plan, did I re-run from the source, list what was carried forward, and say what moved?
-- **Nutrition** — block at the top, per-serve and total, every figure tagged, rounded to the precision it deserves, source contradictions named?
-- **Servings** — stated, or inferred and marked; totals only when neither is possible?
+- **Nutrition** — per-serve and total, tagged `(from source)` or `(calculated)`, rounded to the precision it deserves?
+- **Servings** — stated, or calculated and said so; totals only when neither is possible?
+- **Contradictions** — resolved to the recipe as written, flagged once beside the plan, kept out of the plan itself?
 - **Exclusions** — uncosted accompaniments left out and named; unestimatable ingredients called out rather than guessed?
 - **Fidelity** — quantities, temperatures, techniques, stated times unchanged?
 - **Inference** — every supplied duration marked, or the all-inferred header used?
@@ -864,19 +981,19 @@ Before returning, verify each. If any answer is no, revise.
 - **Equipment** — capacity, sharing and contention resolved, or the conflict stated?
 - **Tail** — after-block present, and the dish only `✓` once it is done?
 - **Headline** — active and total elapsed both reported, not conflated?
-- **Rendering** — fenced, near ~60 characters, every row surviving a wrap?
+- **Rendering** — legend inside the fence, near ~50 characters, every row surviving a wrap?
 - **Load** — could one cook realistically execute this?
 
 ## Mode A only
 
-- **Markers** — counting to the next action in **any** lane, sitting directly under their timestamps, skipping gaps of a minute or less?
+- **Markers** — counting to the next action in **any** lane, sitting directly under their timestamps, skipping gaps of a minute or less, carrying no unit?
 - **Durations** — moved onto their events rather than into the marker column?
 - **Collisions** — no two hands-on actions in the same minute in different lanes?
 - **Rows** — simultaneous events sharing a row rather than stacking?
 - **Clock 0** — the start of the continuous sequence?
 - **Attention** — every rule at its correct weight, prep only in `│` or `╎` intervals?
 - **Prep** — present and scheduled at the latest calm opportunity, baking excepted?
-- **Branches** — genuinely separate, at most two lanes, starting where they should, merging only if they truly combine?
+- **Branches** — genuinely separate, at most two lanes, opening near column 18, merging only if they truly combine?
 - **Batches** — cycles collapsed with recovery time and a holding instruction?
 - **Convergence** — anchored to `T−n` if two or more components must arrive hot separately?
 
@@ -885,13 +1002,13 @@ Before returning, verify each. If any answer is no, revise.
 - Mise en place complete and in reach order?
 - Preheat gate in **Before heat** with its lead time, outside the sequence clock?
 - Sequence free of interval markers and prep tasks?
-- No-pause warning stated?
+- No-pause line stated?
 
 ## Mode C only
 
 - Sessions separated, each with its own hands-on estimate?
 - Everything offset from serve rather than from zero?
-- Minimum and maximum wait times both shown where the source gives them?
+- The wait in **After active cooking**, with minimum and maximum where the source gives them?
 - Intermediate shelf lives flagged where those components are made?
 
 ---
@@ -900,14 +1017,19 @@ Before returning, verify each. If any answer is no, revise.
 
 *For whoever edits this file. Not part of a run.*
 
-Rules and their demonstrations drift apart, and when they disagree the demonstration wins. Four times a worked example has undermined a rule it was meant to illustrate — `[+1 min]` markers, marker placement, a rice branch with no supplied method, and an example missing the Ingredients section §11 requires. Each time the example kept reproducing the bug after the rule had been fixed.
+Rules and their demonstrations drift apart, and when they disagree the demonstration wins. Three times a worked example contradicted a rule it was meant to illustrate — `[+1]` markers, marker placement, and a rice branch with no supplied method — and each time the example kept reproducing the bug after the rule had been fixed.
+
+A fourth instance was drift by **omission**: §11 required Ingredients, Equipment and Serve with; the Mode A example contained none of them; a fresh run reproduced the gap. Omission is harder to catch than contradiction, because a missing section presents no line to compare against the rule and nothing looks wrong on inspection.
 
 The defence is adjacency. Every rule worth demonstrating carries a short snippet directly beneath it. Those have never drifted, because you cannot edit the rule without seeing the snippet. Keep it that way:
 
 - **When you change a rule, fix its snippet in the same edit.**
-- **Keep exactly one full composite per mode in §12.** Do not add a second; two examples of one mode can contradict each other, and then neither is authoritative.
-- **Prefer a fragment to a second full example** when a mode needs to show another shape. A fragment that omits markers and lanes cannot disagree with the full example about them — it only demonstrates what it uniquely owns.
-- **A worked example must exercise every applicable section of §11, and name the sections it skips.** Drift by omission is harder to catch than drift by contradiction: a missing section presents no line to compare against the rule, so nothing looks wrong on inspection and the adjacency defence does not reach it. Naming the skipped sections turns an absence into a visible decision.
+- **Keep exactly one full composite per mode in §12.** Two examples of one mode can contradict each other, and then neither is authoritative.
+- **Prefer a fragment to a second full example** when a mode needs to show another shape. A fragment that omits markers and lanes cannot disagree with the full example about them.
+- **The Mode A composite must exercise every applicable §11 section, and name the ones it skips.** Naming a skipped section turns an absence into a visible decision — the only defence against drift by omission, since adjacency cannot help when there is no snippet to sit beside.
+- **The Mode B and C examples are exempt, and say so in one line.** They demonstrate their own plan shape only.
+- **A change to document typography touches all four examples.** Heading level, provenance placement and rules render in every one, so a §11 edit that stops at §11 leaves four counter-examples behind.
+- **State each rule once.** §13 carries only failures whose symptom is not obvious from the rule; anything that is just the rule restated belongs in §14 alone.
 - **After changing any rule, re-read §12 against it before shipping.**
 
 Length is itself a risk: the longer this file gets, the less reliably any single rule is followed. Before adding a section, check whether an existing rule can absorb it.
