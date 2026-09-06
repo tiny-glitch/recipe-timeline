@@ -515,7 +515,7 @@ T−n        minutes before serve
 →          sensory cue
 ```
 
-Put a legend at the top of every output, listing only the symbols actually used.
+Put a legend at the top of the timeline, listing only the symbols actually used.
 
 ## Width and rendering
 
@@ -598,14 +598,36 @@ but its second table is calculated on 66 g.
 
 Active ~28 min  ·  Total elapsed ~32 min
 
-Legend  ● act  │ free  ┃ attended  ◆ gate  ◇ stop
-        [+n] to next action · 🔪 prep · ✓ done
-        Right-hand lane is the pasta.
+EQUIPMENT
+Deep pan or pot — finished volume ~4 L, larger than the
+wording implies. Second pot for pasta. Two burners from
+4 min.
+
+INGREDIENTS — grouped by when they are used
+before   1 large brown onion, finely diced
+0 min    1 tbsp olive oil · the onion · pinch of salt
+4 min    500 g pasta · salt for the water
+9 min    5 garlic cloves, minced
+10 min   700 g passata · 1–2 tsp Italian herbs
+         ½ tsp chilli flakes · black pepper
+19 min   1–2 tsp balsamic · salt to taste
+20 min   2 cans cannellini, drained · 450–500 g peas
+22 min   1 bag baby spinach (~120–150 g)
+24 min   200 g cottage cheese · 20–30 g parmesan
+         1 cup reserved pasta water [taken at 23 min]
+
+Not applicable here: Serve with (the source names no
+accompaniment), Earlier (no soak, marinade or thaw),
+After active cooking (nothing rests, cools or sets).
 
 BEFORE ACTIVE COOKING
 ● DICE ONION (~3 min)
 
 TIMELINE
+Legend  ● act  │ free  ┃ attended  ◆ gate  ◇ stop
+        [+n] to next action · 🔪 prep · ✓ done
+        Right-hand lane is the pasta.
+
 0 min       ● OIL + ONION + PINCH SALT, medium
 [+4 min]    │  cook 8–10 min → soft, golden, savoury
             │
@@ -645,7 +667,7 @@ TIMELINE
 28 min      ✓ DONE
 ```
 
-This exercises: markers computed across both lanes and sitting under their timestamps; no `[+1 min]`; cooking durations riding on their events; a setup gate before an irreversible step; a `◇` stop-condition; a resolved collision — the drain sits inside the spinach wilt rather than fighting it; a real merge, because the pasta goes **into** the sauce; and `[source]` nutrition with the source's own contradiction named rather than silently resolved.
+This exercises: markers computed across both lanes and sitting under their timestamps; no `[+1 min]`; cooking durations riding on their events; a setup gate before an irreversible step; a `◇` stop-condition; a resolved collision — the drain sits inside the spinach wilt rather than fighting it; a real merge, because the pasta goes **into** the sauce; `[source]` nutrition with the source's own contradiction named rather than silently resolved; and ingredients grouped by the moment they are used rather than by component, which is what lets the reserved cup of pasta water appear in the 24 min group annotated with where it came from — a relationship a conventional ingredient list cannot express.
 
 ## Mode A fragment — long-lead and a supplied method
 
@@ -668,7 +690,9 @@ BEFORE ACTIVE COOKING            (~45 min)
 ● PRESSURE-COOK RAJMA until soft
 ● CHOP ONION + GREEN CHILLI
 
-TIMELINE — renders as the pasta example above.
+EQUIPMENT, INGREDIENTS and TIMELINE — as the pasta
+example above. Serve with: not applicable, the rice
+method came from the user and so has its own lane.
 ```
 
 The 45 minutes of pressure-cooking sits in total elapsed, never in active. The rice is a branch **only** because the method was supplied and credited — had the source said just "serve with rice," the correct output is `Rice — method not given` under **Serve with**, with no lane at all. And the rice would finish alongside the rajma on its own `✓` row: no merge, because rice and rajma share a plate rather than combining.
@@ -679,18 +703,28 @@ The 45 minutes of pressure-cooking sits in total elapsed, never in active. The r
 Serves 2  ·  Per serve 410 kcal  ·  Total 820 kcal
 P 34 g  ·  C 18 g  ·  F 22 g                 [source]
 
-Legend  ● act  ◆ gate  ✓ done
+EQUIPMENT
+Wok or wide heavy pan. One burner on its highest
+setting. Warm plate for the rested chicken.
 
-MISE EN PLACE — in reach order, left to right
-  1  Chicken, marinated      5  Peanuts
-  2  Sauce, whisked          6  Scallion greens
-  3  Chillies + peppercorns  7  Warm serving plate
-  4  Garlic, ginger, whites
+INGREDIENTS — all of it before heat, in reach order
+1  400 g chicken thigh, sliced, in its marinade
+2  Sauce: soy · vinegar · sugar · cornflour, whisked
+3  6 dried chillies · 1 tsp Sichuan peppercorns
+4  3 garlic cloves · thumb of ginger · scallion whites
+5  50 g roasted peanuts
+6  Scallion greens
+
+Not applicable here: Serve with (none named), Earlier
+(the marinade runs while the rest is prepped, so it is
+pre-prep), After active cooking (nothing rests).
 
 BEFORE HEAT
 ● WOK ON HIGH        ◆ until smoking (~3 min)
 
 SEQUENCE — ~3 min, no pause once the oil goes in
+Legend  ● act  ◆ gate  ✓ done
+
 0:00   ● Oil, swirl to coat
 0:15   ● Chicken in, spread flat, leave still
 0:45   ● Toss until just opaque
@@ -702,7 +736,7 @@ SEQUENCE — ~3 min, no pause once the oil goes in
 3:00   ✓ PLATE NOW — holds ~0
 ```
 
-Figures are `[source]`, quoted as published and not recomputed. No interval markers and no prep tasks inside the sequence: there is no free time, and pretending otherwise is the failure Mode B exists to prevent.
+Figures are `[source]`, quoted as published and not recomputed. The ingredient list is numbered rather than timed, because Mode B stages everything before heat — the numbers are reach order, which is what replaces timing here. No interval markers and no prep tasks inside the sequence: there is no free time, and pretending otherwise is the failure Mode B exists to prevent.
 
 ## Mode C — set dessert
 
@@ -712,9 +746,22 @@ Total ~2,040 kcal  ·  P 4 g  ·  C 26 g  ·  F 25 g
                                                [est.]
 Active ~20 min  ·  Total elapsed ~4 hr 45
 
-Legend  ● act  │ unattended  ┃ attended  ◆ gate
+EQUIPMENT
+Saucepan · fine sieve · 6 moulds or ramekins · fridge
+space for all six, flat.
+
+INGREDIENTS — grouped by when they are used
+T−4:45   3 gelatine leaves · cold water to bloom
+T−4:40   500 ml cream · 60 g sugar · 1 vanilla pod
+T−0:02   berries · mint to finish
+
+Not applicable here: Serve with (none named), Earlier
+(the set is a tail, not a lead).
 
 SERVE 20:00
+
+SCHEDULE
+Legend  ● act  │ unattended  ┃ attended  ◆ gate
 
 SESSION 1 — start 15:15, about 15 min hands-on
 T−4:45  🔪 Bloom gelatine in cold water
@@ -725,7 +772,7 @@ T−4:33  ● Off heat · stir in gelatine until dissolved
 T−4:31  ● Strain into moulds
 T−4:30  ● Into the fridge
 
-SET — unattended
+AFTER ACTIVE COOKING — the set
         │
         │  4 hr minimum · good to 24 hr
         │
@@ -735,11 +782,13 @@ T−0:02  🔪 Berries + mint
 T−0:00  ✓ SERVE
 ```
 
-No serving count in the source, so it is inferred from mould volume and marked. Sessions, not a continuous clock. The dish is `✓` only after the set, never at the end of Session 1.
+No serving count in the source, so it is inferred from mould volume and marked. Sessions, not a continuous clock. The set is an **After active cooking** block, not a gap in the schedule — the dish is `✓` only after it, never at the end of Session 1.
 
 ---
 
 # 13. Failure Modes
+
+**Missing a required section.** A plan with no Ingredients list, because the worked example it anchored on did not have one. Every applicable §11 section appears; skipped ones are skipped because they do not apply, not because they were forgotten.
 
 **Invented side method.** "Serve with rice" rendered as a rice branch with washing, boiling and a 12-minute cover. A branch needs a method from the source or the user — and a user-supplied one gets credited.
 
@@ -800,6 +849,7 @@ Before returning, verify each. If any answer is no, revise.
 ## All modes
 
 - **Fit** — right mode; and if the recipe is too simple, did I recommend rather than refuse?
+- **Structure** — is every applicable §11 section present, Ingredients included? Sections legitimately skipped (Serve with, Earlier, After active cooking) are omitted silently in a real run; in a worked example they are named.
 - **Source** — do I actually have the method?
 - **Provenance** — does every branch have a real method, and is a user-supplied one credited?
 - **Revision** — if this replaces an earlier plan, did I re-run from the source, list what was carried forward, and say what moved?
@@ -850,13 +900,14 @@ Before returning, verify each. If any answer is no, revise.
 
 *For whoever edits this file. Not part of a run.*
 
-Rules and their demonstrations drift apart, and when they disagree the demonstration wins. Three times a worked example has contradicted a rule it was meant to illustrate — `[+1 min]` markers, marker placement, and a rice branch with no supplied method — and each time the example kept reproducing the bug after the rule had been fixed.
+Rules and their demonstrations drift apart, and when they disagree the demonstration wins. Four times a worked example has undermined a rule it was meant to illustrate — `[+1 min]` markers, marker placement, a rice branch with no supplied method, and an example missing the Ingredients section §11 requires. Each time the example kept reproducing the bug after the rule had been fixed.
 
 The defence is adjacency. Every rule worth demonstrating carries a short snippet directly beneath it. Those have never drifted, because you cannot edit the rule without seeing the snippet. Keep it that way:
 
 - **When you change a rule, fix its snippet in the same edit.**
 - **Keep exactly one full composite per mode in §12.** Do not add a second; two examples of one mode can contradict each other, and then neither is authoritative.
 - **Prefer a fragment to a second full example** when a mode needs to show another shape. A fragment that omits markers and lanes cannot disagree with the full example about them — it only demonstrates what it uniquely owns.
+- **A worked example must exercise every applicable section of §11, and name the sections it skips.** Drift by omission is harder to catch than drift by contradiction: a missing section presents no line to compare against the rule, so nothing looks wrong on inspection and the adjacency defence does not reach it. Naming the skipped sections turns an absence into a visible decision.
 - **After changing any rule, re-read §12 against it before shipping.**
 
 Length is itself a risk: the longer this file gets, the less reliably any single rule is followed. Before adding a section, check whether an existing rule can absorb it.
