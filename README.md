@@ -85,8 +85,8 @@ The recipe as written says *cook the pasta first*. Pasta holds for about zero mi
 **As a plugin** (recommended — updates when this repo does):
 
 ```
-/plugin marketplace add tiny-glitch/claude-tools
-/plugin install recipe-timeline@claude-tools
+/plugin marketplace add tiny-glitch/recipe-timeline
+/plugin install recipe-timeline@tiny-glitch
 ```
 
 **Manually**, for one machine:
