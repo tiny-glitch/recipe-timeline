@@ -1,7 +1,7 @@
 {
   "name": "recipe-timeline",
   "description": "Turns a written recipe into an execution-order cooking timeline.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": {
     "name": "tiny-glitch",
     "url": "https://github.com/tiny-glitch"
