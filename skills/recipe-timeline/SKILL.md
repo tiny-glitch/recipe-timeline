@@ -42,13 +42,22 @@ There is no free time in Mode B, so do not pretend there is. Output:
 1. **Mise en place, in reach order** — everything prepped and arranged before heat, listed in the order it will be grabbed.
 2. **A before-heat block** carrying any preheat gate and its lead time, outside the sequence clock. The clock starts when the food hits the heat, not when the pan does.
 3. **A fast sequence** with cumulative seconds and gates, no `[+n]` markers and no prep tasks inside it.
-4. An explicit line: *"From heat on to plate is about N minutes with no pause. Everything above must be within arm's reach first."*
+4. An explicit commitment line. Where the cook is at the pan throughout: *"From heat on to plate is about N minutes with no pause. Everything above must be within arm's reach first."* Where the sequence opens with a watched stretch over ~2 minutes — an undisturbed brown, a reduction left to tighten — name it rather than claim continuous commitment: *"The first N min are a watched brown you must not touch; from there it runs to plate with no pause."*
 
 Mode B is the exception to "do not dump all mise en place before the clock." Here, dumping it there is correct.
 
 ## Mode C — Schedule (wait-dominant)
 
 Active work is a small fraction of elapsed time: baking, bread, chilled and set desserts, fermentation, sous vide, overnight braises, anything with a multi-hour tail. Output **sessions anchored backward from serve time**, not a continuous clock from zero.
+
+## When A and B both fit
+
+A recipe can trip both tests at once — several actions with an interval or two over three minutes (Mode A), yet most intervals short and the cook rarely away from the pan (Mode B). Route on **free time, not interval length**: is there a stretch where the cook can *leave the pan* — a component running unattended long enough to start or prep something else?
+
+- Yes → **Mode A**. A lone short step rides in the annotation.
+- No → **Mode B**, even if a couple of intervals run over 90 seconds.
+
+"Free" means the `│` lane — able to step away — not `┃`, where the hands are idle but the cook must stay and watch (a brown that must not be left, a reduction held at a simmer). A watched stretch is not a schedulable window; a recipe that is all watching-without-leaving is Mode B.
 
 ## Mixed
 
@@ -92,7 +101,7 @@ If the method is present but **times are missing** (very common on recipe blogs 
 
 # 2. Extract
 
-From the source, capture: title, servings, ingredients, instructions, stated times, temperatures, equipment, doneness cues, accompaniments, and any stated nutrition figures.
+From the source, capture: title, servings, ingredients, instructions, stated times, temperatures, equipment, doneness cues, accompaniments, any stated nutrition figures, and the source URL when the recipe came from one.
 
 Do not alter ingredient quantities.
 
@@ -115,7 +124,7 @@ Protein, carbohydrate and fat are the default three. Carry fibre, sugar or sodiu
 
 ## Provenance, always marked
 
-`(from source)` — the recipe states the figures. Quote them verbatim. Do not recompute them, and do not "correct" them even if your own estimate disagrees.
+`(from source)` — the recipe states the figures. Quote them verbatim. Do not recompute them, and do not "correct" them even if your own estimate disagrees — with one exception: a figure that is arithmetically impossible against the recipe's own ingredients (see *When a stated figure is impossible*, below).
 
 `(calculated)` — computed by you from the ingredient list. Never present these as the recipe's own numbers.
 
@@ -159,6 +168,21 @@ nutrition table is calculated on 66 g. I've used the
 ```
 
 If the user answers, re-run with their choice. If they don't, the plan already stands and nothing needs redoing.
+
+## When a stated figure is impossible
+
+Different from a contradiction: here the source does not disagree with itself, it disagrees with arithmetic. A stated figure that cannot be reconciled with the recipe's own ingredient list — off by roughly an order of magnitude, not merely higher or lower than you'd expect — is not a number to quote. Overwrite it with your own estimate, **retag the whole block `(calculated)`**, and say once, beside the plan, what happened:
+
+```text
+Source said ~90 kcal per serve; replaced — impossible against
+500 g pasta across six serves. Figure below is calculated.
+```
+
+The retag is the point. Overwriting while keeping `(from source)` is the fidelity failure this skill exists to prevent — an invented number wearing sourced typography (§13). Once you overwrite, the number is yours: it is `(calculated)`.
+
+The bound is arithmetic, not taste. "Impossible against the ingredients" is mechanical and gives two runs the same answer; "looks high" is a judgement call that reopens the divergence the tags exist to close, and it collides with the Scope rule below — do not comment on whether figures are high or low. The note names the arithmetic ("impossible against 500 g pasta"), never a verdict ("too high").
+
+This resolves differently from a contradiction: there, the figures matching the recipe as written are still the source's own, so they keep `(from source)`; here no stated figure survives, so the block becomes `(calculated)`.
 
 ## Estimating honestly
 
@@ -522,7 +546,7 @@ If a batch process outlasts its own batter's shelf life, say so and split the ba
 ↻          repeated batch cycle
 [+n]       stated gap to the next action, in minutes
 [≈n]       inferred gap to the next action, in minutes
-T−n        minutes before serve
+T−4h45     before serve, hours and minutes; T−5m if under an hour
 ├·······→  parallel component branch
 └────────→  convergence (components that combine)
 ✓          component complete
@@ -555,6 +579,8 @@ The output is a **markdown document**. Only the plan is fenced (§10).
 # [Recipe name]
 
 [One line saying what it is. Optional.]
+
+[Original recipe](URL)              [only when the source is a URL]
 
 **Serves X** · Active ~N min · Total elapsed ~N
 
@@ -611,6 +637,8 @@ Only if requested or supported by the source.
 ```
 
 The recipe name is `#`; every section heading is `##`.
+
+**When the source is a URL, link it** directly under the description as `[Original recipe](https://…)`, above the Serves headline — provenance a cook can follow, and durable for a reader who never saw the conversation. A markdown link, never HTML (below). When the source was pasted text, dictated, or from a book, there is no link to give: omit the line silently.
 
 **Sections that do not apply are omitted silently** — no placeholder, no "not applicable" line, in any real run. A worked example in §12 is the sole exception: it names what it skips, because an unexplained absence in an example is what teaches the next run to drop a section (§15).
 
@@ -844,6 +872,47 @@ From heat on to plate is about 3 minutes with no pause.
 
 This example demonstrates the Mode B sequence only; the surrounding document is §11's, unchanged. No interval markers and no prep tasks inside the sequence: there is no free time, and pretending otherwise is the failure Mode B exists to prevent.
 
+## Mode B — with a watched stretch
+
+# Garlic Balsamic Mushrooms
+
+Mode B, but not a stir-fry: it opens with a brown the cook must watch and must not touch, then runs to plate with no pause. The one long interval is attention, not a free window (§0, "when A and B both fit"), so this is Mode B and not Mode A.
+
+## Before heat
+
+In reach order:
+
+1. Mushrooms, sliced
+2. Garlic, minced · thyme
+3. Balsamic, measured
+4. Salt and pepper
+5. Optional: half a lemon
+
+- **Pan on medium-high with the oil** — ◆ until it shimmers (~2 min)
+
+---
+
+## Sequence
+
+```text
+Legend
+  ●  act   ┃  watch, don't touch   ◆ go when true   ✓ done
+
+0:00   ● Mushrooms in — single layer, spread out
+       ┃  4–5 min · don't stir, let them caramelise
+       ◆ browned
+4:30   ● Garlic + thyme — 1 min, till fragrant
+5:30   ● Balsamic — 20–30 sec, toss to coat
+6:00   ● Salt + pepper · optional lemon
+6:15   ✓ PLATE
+```
+
+---
+
+The first 4–5 minutes are a watched brown, then it runs to plate with no pause. The cook stays at the pan and must not stir during the brown, so no prep is scheduled into it — `┃`, not `│`. That `┃` stretch is exactly what an ordinary no-pause line would misdescribe (F2), and why the commitment line names it.
+
+This example demonstrates the Mode B sequence only; the surrounding document is §11's, unchanged.
+
 ## Mode C — set dessert
 
 # Vanilla Panna Cotta
@@ -869,18 +938,18 @@ Legend
   ◆  go when true   🔪 prep   ✓  done
 
 SESSION 1 — 15:15, about 15 min hands-on
-T−4:45  🔪 Bloom gelatine in cold water
+T−4h45  🔪 Bloom gelatine in cold water
         │  5 min
-T−4:40  ● Cream + sugar + vanilla, medium
+T−4h40  ● Cream + sugar + vanilla, medium
         ┃  ◆ steaming, not simmering
-T−4:33  ● Off heat · stir in gelatine
-T−4:31  ● Strain into moulds
-T−4:30  ● Into the fridge
+T−4h33  ● Off heat · stir in gelatine
+T−4h31  ● Strain into moulds
+T−4h30  ● Into the fridge
 
 SESSION 2 — 19:55, about 5 min
-T−0:05  ● Dip moulds in warm water 3 sec
-T−0:02  🔪 Berries + mint
-T−0:00  ✓ SERVE
+T−5m    ● Dip moulds in warm water 3 sec
+T−2m    🔪 Berries + mint
+T−0m    ✓ SERVE
 ```
 
 ---
@@ -928,6 +997,8 @@ Each of these has happened. They are here because the symptom is not obvious fro
 
 **Frying oil counted in full.** The whole pan added when the food absorbed a tenth of it.
 
+**Overwritten figure still tagged from source.** A nutrition block corrected for an impossible source number but left wearing `(from source)`. If you replaced it, it is `(calculated)`.
+
 **Fabricated precision in time.** `[+8]` for "cook till the oil separates." Use `[≈8]` and let the cue carry the weight.
 
 **Lost tail.** Panna cotta `✓` at 12 minutes when it sets for four hours.
@@ -965,6 +1036,7 @@ Before returning, verify each. If any answer is no, revise.
 - **Nutrition** — per-serve and total, tagged `(from source)` or `(calculated)`, rounded to the precision it deserves?
 - **Servings** — stated, or calculated and said so; totals only when neither is possible?
 - **Contradictions** — resolved to the recipe as written, flagged once beside the plan, kept out of the plan itself?
+- **Impossible figures** — a figure irreconcilable with its own ingredients overwritten, the block retagged `(calculated)`, and the swap noted once?
 - **Exclusions** — uncosted accompaniments left out and named; unestimatable ingredients called out rather than guessed?
 - **Fidelity** — quantities, temperatures, techniques, stated times unchanged?
 - **Inference** — every supplied duration marked, or the all-inferred header used?
@@ -995,12 +1067,12 @@ Before returning, verify each. If any answer is no, revise.
 - Mise en place complete and in reach order?
 - Preheat gate in **Before heat** with its lead time, outside the sequence clock?
 - Sequence free of interval markers and prep tasks?
-- No-pause line stated?
+- Commitment line stated — no-pause, or a named watched stretch where the sequence opens with one?
 
 ## Mode C only
 
 - Sessions separated, each with its own hands-on estimate?
-- Everything offset from serve rather than from zero?
+- Everything offset from serve rather than from zero, in the `T−4h45` / `T−5m` unit form?
 - The wait in **After active cooking**, with minimum and maximum where the source gives them?
 - Intermediate shelf lives flagged where those components are made?
 
