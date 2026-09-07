@@ -48,7 +48,9 @@ Mode B is the exception to "do not dump all mise en place before the clock." Her
 
 ## Mode C — Schedule (wait-dominant)
 
-Active work is a small fraction of elapsed time: baking, bread, chilled and set desserts, fermentation, sous vide, overnight braises, anything with a multi-hour tail. Output **sessions anchored backward from serve time**, not a continuous clock from zero.
+A long passive wait dominates — hours, not minutes, long enough that the cook leaves and comes back, so a single continuous clock is useless: baking, bread, chilled and set desserts, fermentation, sous vide, overnight braises. Output **sessions anchored backward from serve time**, not a continuous clock from zero.
+
+A short rest is **not** this. A batter resting 20 minutes, or dough relaxing on the bench, is a gap in a Mode A plan or a line under *Before active cooking* — not a reason to switch modes. The test is whether the wait breaks the clock, not whether waiting outweighs work.
 
 ## When A and B both fit
 
